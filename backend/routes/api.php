@@ -4,6 +4,12 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// Sanctum CSRF Cookie endpoint
+Route::get('/sanctum/csrf-cookie', function () {
+    return response()->json(['message' => 'CSRF cookie set'])
+        ->header('Content-Type', 'application/json');
+});
+
 Route::middleware(['api'])->group(function () {
     // Public auth routes
     Route::post('/login', [AuthController::class, 'login']);

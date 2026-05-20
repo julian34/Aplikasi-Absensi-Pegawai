@@ -12,11 +12,21 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // API middleware with Sanctum
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
 
         $middleware->statefulApi();
+        
+        // Exclude login endpoint from CSRF protection
+        $middleware->validateCsrfTokens(except: [
+            'api/login',
+            'api/sanctum/csrf-cookie',
+        ]);
+        
+        // Add JSON response header for API
+        $middleware->append(\App\Http\Middleware\JsonResponse::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
