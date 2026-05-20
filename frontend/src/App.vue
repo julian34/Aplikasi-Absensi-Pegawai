@@ -2,7 +2,8 @@
   <router-view />
 </template>
 
-<script setup></script>
+<script setup>
+</script>
 
 <style>
 * {
@@ -11,9 +12,7 @@
   box-sizing: border-box;
 }
 
-body,
-html,
-#app {
+body, html, #app {
   width: 100%;
   min-height: 100vh;
 }
