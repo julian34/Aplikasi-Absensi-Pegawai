@@ -26,12 +26,22 @@ class LaporanAbsensiController extends Controller
         $endDate   = $startDate->copy()->endOfMonth();
         $daysInMonth = $endDate->day;
 
-        $pegawaiList = Pegawai::with(['absensi' => function ($query) use ($startDate, $endDate) {
-            $query->whereBetween('tanggal', [
-                $startDate->toDateString(),
-                $endDate->toDateString(),
-            ]);
-        }])->orderBy('nama')->get();
+        $pegawai = Pegawai::where('user_id', $request->user()->id)
+            ->with(['absensi' => function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('tanggal', [
+                    $startDate->toDateString(),
+                    $endDate->toDateString(),
+                ]);
+            }])->first();
+
+        if (!$pegawai) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data pegawai untuk user ini belum tersedia.',
+            ], 404);
+        }
+
+        $pegawaiList = collect([$pegawai]);
 
         $result = $pegawaiList->map(function ($pegawai) use ($tahun, $bulan, $daysInMonth) {
             // Map day-of-month => absensi record
