@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AbsensiController;
+use App\Http\Controllers\LaporanAbsensiController;
 
 Route::middleware(['api'])->group(function () {
     // Public auth routes
@@ -19,5 +20,8 @@ Route::middleware(['api'])->group(function () {
         Route::get('/absensi/today', [AbsensiController::class, 'today']);
         Route::post('/absensi/datang', [AbsensiController::class, 'absenDatang']);
         Route::post('/absensi/pulang', [AbsensiController::class, 'absenPulang']);
+
+        // Laporan absensi
+        Route::get('/laporan-absensi', [LaporanAbsensiController::class, 'index']);
     });
 });
