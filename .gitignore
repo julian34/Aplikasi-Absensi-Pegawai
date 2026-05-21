@@ -127,4 +127,5 @@ Homestead.yaml
 /.idea
 /.vscode
 .env.dusk.local
-.env.dusk.testing
+.env.dusk.testing 
+README-dev.md
