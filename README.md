@@ -117,6 +117,10 @@ Berdasarkan use case diagram, aktor utama dalam sistem adalah:
 
 ---
 
+### Pengujian Sistem
+
+![CFG](Doc/cfg.drawio.png)
+
 ---
 
 ## Instalasi Menggunakan Docker
@@ -133,7 +137,7 @@ Service utama yang digunakan:
 
 | Service    | Fungsi              | Port |
 | ---------- | ------------------- | ---- |
-| backend    | Laravel backend API | 9000 |
+| backend    | Laravel backend API | 8000 |
 | web        | Vue.js frontend     | 5173 |
 | db         | MySQL database      | 3306 |
 | phpmyadmin | Database management | 8082 |
