@@ -60,7 +60,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Login berhasil',
             'user' => $user->load('pegawai'),
-        ], 200)->header('Content-Type', 'application/json');
+        ], 200);
     }
 
     /**
@@ -70,7 +70,7 @@ class AuthController extends Controller
     {
         return response()->json([
             'user' => $request->user()->load('pegawai'),
-        ], 200)->header('Content-Type', 'application/json');
+        ], 200);
     }
 
     /**
@@ -85,6 +85,6 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Logout berhasil',
-        ], 200)->header('Content-Type', 'application/json');
+        ], 200);
     }
 }
