@@ -49,10 +49,18 @@
       </form>
 
       <div class="login-footer">
-        <p>Contoh Login:</p>
-        <p class="example">Email: <code>Andimultimedia@papua.go.id</code></p>
-        <p class="example">Password: <code>papua1324</code></p>
-        <p class="example">atau NIP: <code>19900101001</code></p>
+        <p>
+          Apabila lupa password silahkan Menghubungi <b>Opertor Absen</b> pada
+          dinas masing-masing
+        </p>
+        <p class="example">
+          Perubahan data :
+          <code>
+            silahkan datang langsung ke dinas Komunikasi dan Informatika
+            provinsi papua dengan membawa bukti dan surat pengantar dari dinas
+            masing-masing
+          </code>
+        </p>
       </div>
     </div>
   </div>
