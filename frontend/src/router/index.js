@@ -1,7 +1,10 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import LoginPage from "@/views/LoginPage.vue";
+
+// pegawai routes
 import DashboardPage from "@/views/DashboardPage.vue";
+import LaporanAbsensiPage from "@/views/LaporanAbsensiPage.vue";
 
 const routes = [
   {
@@ -20,6 +23,16 @@ const routes = [
     path: "/",
     name: "Home",
     redirect: "/login",
+  },
+
+  // pegawai routes
+  {
+    path: "/laporan-absensi",
+    name: "laporan-absensi",
+    component: LaporanAbsensiPage,
+    meta: {
+      requiresAuth: true,
+    },
   },
 ];
 

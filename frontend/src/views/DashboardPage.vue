@@ -1,17 +1,30 @@
 <template>
   <div class="dashboard-container">
     <div class="dashboard-header">
-      <h1>Dashboard - Aplikasi Absensi Pegawai</h1>
-      <button @click="handleLogout" class="btn-logout">Logout</button>
+      <div>
+        <h1>Dashboard - Aplikasi Absensi Pegawai</h1>
+        <p class="dashboard-subtitle">
+          Kelola absensi datang dan pulang pegawai
+        </p>
+      </div>
+      <div class="dashboard-actions">
+        <button @click="goToLaporanAbsensi" class="btn-report">
+          Laporan Absensi
+        </button>
+
+        <button @click="handleLogout" class="btn-logout">Logout</button>
+      </div>
     </div>
 
     <div v-if="user" class="dashboard-content">
       <div class="user-info-card">
         <h2>Informasi User</h2>
+
         <div class="info-group">
           <label>Nama:</label>
           <p>{{ user.name }}</p>
         </div>
+
         <div class="info-group">
           <label>Email:</label>
           <p>{{ user.email }}</p>
@@ -20,21 +33,95 @@
 
       <div v-if="user.pegawai" class="pegawai-info-card">
         <h2>Informasi Pegawai</h2>
+
         <div class="info-group">
           <label>NIP:</label>
           <p>{{ user.pegawai.nip }}</p>
         </div>
+
         <div class="info-group">
           <label>Nama:</label>
           <p>{{ user.pegawai.nama }}</p>
         </div>
+
         <div class="info-group">
           <label>Jabatan:</label>
           <p>{{ user.pegawai.jabatan }}</p>
         </div>
+
         <div class="info-group">
           <label>Unit Kerja:</label>
           <p>{{ user.pegawai.unit_kerja }}</p>
+        </div>
+      </div>
+
+      <div class="attendance-card">
+        <div class="attendance-header">
+          <div>
+            <h2>Absensi Hari Ini</h2>
+            <p>{{ todayText }}</p>
+          </div>
+
+          <span class="attendance-badge" :class="statusClass">
+            {{ statusText }}
+          </span>
+        </div>
+
+        <div v-if="attendanceLoading" class="attendance-loading">
+          Memuat data absensi...
+        </div>
+
+        <div v-else>
+          <div class="attendance-grid">
+            <div class="attendance-item">
+              <label>Jam Masuk</label>
+              <strong>{{ absensi?.jam_masuk || "-" }}</strong>
+            </div>
+
+            <div class="attendance-item">
+              <label>Jam Pulang</label>
+              <strong>{{ absensi?.jam_pulang || "-" }}</strong>
+            </div>
+
+            <div class="attendance-item">
+              <label>Status Masuk</label>
+              <strong>{{ formatStatus(absensi?.status_masuk) }}</strong>
+            </div>
+
+            <div class="attendance-item">
+              <label>Status Pulang</label>
+              <strong>{{ formatStatus(absensi?.status_pulang) }}</strong>
+            </div>
+          </div>
+
+          <div class="attendance-actions">
+            <button
+              class="btn-attendance btn-check-in"
+              :disabled="!canAbsenDatang || actionLoading"
+              @click="handleAbsenDatang"
+            >
+              {{ actionLoading ? "Memproses..." : "Absen Datang" }}
+            </button>
+
+            <button
+              class="btn-attendance btn-check-out"
+              :disabled="!canAbsenPulang || actionLoading"
+              @click="handleAbsenPulang"
+            >
+              {{ actionLoading ? "Memproses..." : "Absen Pulang" }}
+            </button>
+          </div>
+
+          <div v-if="message" class="message-box" :class="messageType">
+            {{ message }}
+          </div>
+
+          <div class="attendance-note">
+            <strong>Keterangan:</strong>
+            <span>{{
+              absensi?.keterangan || "Belum ada keterangan absensi."
+            }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -46,132 +133,165 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
+import { absensiService } from "@/services/absensiService";
+import "@/assets/dashboard.css";
 
 const router = useRouter();
+
 const { user, fetchUser, logout } = useAuth();
 
-onMounted(async () => {
-  // Fetch user data if not already loaded
-  if (!user.value) {
-    await fetchUser();
-  }
+const absensi = ref(null);
+const attendanceLoading = ref(false);
+const actionLoading = ref(false);
+const message = ref("");
+const messageType = ref("success");
+
+const todayText = computed(() => {
+  return new Date().toLocaleDateString("id-ID", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
 });
+
+const goToLaporanAbsensi = () => {
+  router.push("/laporan-absensi");
+};
+
+const canAbsenDatang = computed(() => {
+  return !absensi.value || !absensi.value.jam_masuk;
+});
+
+const canAbsenPulang = computed(() => {
+  return absensi.value?.jam_masuk && !absensi.value?.jam_pulang;
+});
+
+const statusText = computed(() => {
+  if (!absensi.value) {
+    return "Belum Absen";
+  }
+
+  if (absensi.value.status === "absen_sekali") {
+    return "Sudah Absen Datang";
+  }
+
+  if (absensi.value.status === "hadir") {
+    return "Hadir";
+  }
+
+  if (absensi.value.status === "terlambat") {
+    return "Terlambat";
+  }
+
+  if (absensi.value.status === "tidak hadir") {
+    return "Tidak Hadir";
+  }
+
+  return formatStatus(absensi.value.status);
+});
+
+const statusClass = computed(() => {
+  if (!absensi.value) {
+    return "badge-empty";
+  }
+
+  if (absensi.value.status === "hadir") {
+    return "badge-success";
+  }
+
+  if (absensi.value.status === "terlambat") {
+    return "badge-warning";
+  }
+
+  if (absensi.value.status === "absen_sekali") {
+    return "badge-info";
+  }
+
+  return "badge-danger";
+});
+
+const loadTodayAbsensi = async () => {
+  attendanceLoading.value = true;
+  message.value = "";
+
+  try {
+    const result = await absensiService.getToday();
+    absensi.value = result.data;
+  } catch (error) {
+    showError(error);
+  } finally {
+    attendanceLoading.value = false;
+  }
+};
+
+const handleAbsenDatang = async () => {
+  actionLoading.value = true;
+  message.value = "";
+
+  try {
+    const result = await absensiService.absenDatang();
+    absensi.value = result.data;
+    showSuccess(result.message || "Absen datang berhasil.");
+  } catch (error) {
+    showError(error);
+  } finally {
+    actionLoading.value = false;
+  }
+};
+
+const handleAbsenPulang = async () => {
+  actionLoading.value = true;
+  message.value = "";
+
+  try {
+    const result = await absensiService.absenPulang();
+    absensi.value = result.data;
+    showSuccess(result.message || "Absen pulang berhasil.");
+  } catch (error) {
+    showError(error);
+  } finally {
+    actionLoading.value = false;
+  }
+};
 
 const handleLogout = async () => {
   await logout();
   router.push("/login");
 };
+
+const formatStatus = (value) => {
+  if (!value) return "-";
+
+  return value
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
+const showSuccess = (text) => {
+  message.value = text;
+  messageType.value = "success";
+};
+
+const showError = (error) => {
+  messageType.value = "error";
+
+  if (error.response?.data?.message) {
+    message.value = error.response.data.message;
+    return;
+  }
+
+  message.value = "Terjadi kesalahan saat memproses absensi.";
+};
+
+onMounted(async () => {
+  if (!user.value) {
+    await fetchUser();
+  }
+
+  await loadTodayAbsensi();
+});
 </script>
-
-<style scoped>
-.dashboard-container {
-  min-height: 100vh;
-  padding: 40px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 40px;
-  background: white;
-  padding: 20px 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.dashboard-header h1 {
-  margin: 0;
-  color: #333;
-  font-size: 28px;
-}
-
-.btn-logout {
-  padding: 10px 20px;
-  background: #ff6b6b;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.btn-logout:hover {
-  background: #ff5252;
-}
-
-.dashboard-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
-}
-
-.user-info-card,
-.pegawai-info-card {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.user-info-card h2,
-.pegawai-info-card h2 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  color: #333;
-  font-size: 20px;
-  border-bottom: 2px solid #667eea;
-  padding-bottom: 10px;
-}
-
-.info-group {
-  margin-bottom: 15px;
-}
-
-.info-group label {
-  display: block;
-  font-weight: 600;
-  color: #667eea;
-  margin-bottom: 5px;
-  font-size: 14px;
-}
-
-.info-group p {
-  margin: 0;
-  color: #333;
-  font-size: 16px;
-  padding: 8px;
-  background: #f8f9fa;
-  border-radius: 6px;
-}
-
-.loading {
-  text-align: center;
-  color: white;
-  font-size: 18px;
-}
-
-@media (max-width: 768px) {
-  .dashboard-content {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboard-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-
-  .dashboard-header h1 {
-    font-size: 20px;
-  }
-}
-</style>

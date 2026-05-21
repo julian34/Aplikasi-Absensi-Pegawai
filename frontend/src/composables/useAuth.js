@@ -3,7 +3,12 @@ import { useAuthStore } from "@/stores/authStore";
 
 export const useAuth = () => {
   const authStore = useAuthStore();
-  const { user, loading: isLoading, error, isAuthenticated } = storeToRefs(authStore);
+  const {
+    user,
+    loading: isLoading,
+    error,
+    isAuthenticated,
+  } = storeToRefs(authStore);
 
   return {
     // Reactive state (storeToRefs agar update store terlihat di komponen)

@@ -215,6 +215,7 @@ Berdasarkan use case diagram, aktor utama dalam sistem adalah:
 
 ![Use Case Diagram](Doc/Usecase.drawio.png)
 ![Class Diagram](Doc/ClassDiagram.drawio.png)
+![ERD](Doc/ERDiagram.drawio.png)
 
 ## Kebutuhan Fungsional
 

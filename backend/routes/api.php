@@ -1,7 +1,10 @@
 <?php
 
-use App\Http\Controllers\AuthController;
+
 use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AbsensiController;
 
 Route::middleware(['api'])->group(function () {
     // Public auth routes
@@ -11,5 +14,10 @@ Route::middleware(['api'])->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/user', [AuthController::class, 'user']);
         Route::post('/logout', [AuthController::class, 'logout']);
+
+        // Absensi routes
+        Route::get('/absensi/today', [AbsensiController::class, 'today']);
+        Route::post('/absensi/datang', [AbsensiController::class, 'absenDatang']);
+        Route::post('/absensi/pulang', [AbsensiController::class, 'absenPulang']);
     });
 });

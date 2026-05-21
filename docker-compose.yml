@@ -42,7 +42,7 @@ services:
     image: phpmyadmin:5
     container_name: finpoint-pma
     ports:
-      - "8082:8082"
+      - "8082:80"
     environment:
       PMA_HOST: db
       PMA_USER: finpoint_user
