@@ -119,7 +119,7 @@
           <div class="attendance-note">
             <strong>Keterangan:</strong>
             <span>{{
-              absensi?.keterangan || "Belum ada keterangan absensi."
+              formatKeterangan(absensi?.keterangan)
             }}</span>
           </div>
         </div>
@@ -269,6 +269,18 @@ const formatStatus = (value) => {
   return value
     .replaceAll("_", " ")
     .replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
+const formatKeterangan = (keterangan) => {
+  if (!keterangan) return "Belum ada keterangan absensi.";
+
+  return keterangan.replace(/(\d+(?:\.\d+)?)\s*menit/g, (_, p1) => {
+    const totalMenit = Math.round(parseFloat(p1));
+    if (totalMenit < 60) return totalMenit + " menit";
+    const jam = Math.floor(totalMenit / 60);
+    const sisa = totalMenit % 60;
+    return sisa === 0 ? jam + " jam" : jam + " jam " + sisa + " menit";
+  });
 };
 
 const showSuccess = (text) => {

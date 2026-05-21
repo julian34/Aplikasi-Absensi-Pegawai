@@ -9,7 +9,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
+  max-width: 1200px;
+  margin: 0 auto 40px;
   background: white;
   padding: 20px 30px;
   border-radius: 12px;
@@ -29,7 +30,7 @@
   border: none;
   border-radius: 6px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: background 0.3s;
 }
@@ -57,6 +58,7 @@
   border: none;
   border-radius: 6px;
   font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
   transition: background 0.3s;
 }

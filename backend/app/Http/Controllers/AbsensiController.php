@@ -76,8 +76,8 @@ class AbsensiController extends Controller
 
             if ($now->greaterThan($batasToleransi)) {
                 $statusMasuk = 'terlambat';
-                $menitTerlambat = $jamMasukNormal->diffInMinutes($now);
-                $keterangan = 'Terlambat ' . $menitTerlambat . ' menit.';
+                $menitTerlambat = (int) round($jamMasukNormal->diffInRealMinutes($now));
+                $keterangan = 'Terlambat ' . $this->formatMenit($menitTerlambat) . '.';
             }
 
             $absensi = Absensi::create([
@@ -151,8 +151,8 @@ class AbsensiController extends Controller
 
             if ($now->lessThan($jamPulangNormal)) {
                 $statusPulang = 'pulang_cepat';
-                $menitPulangCepat = $now->diffInMinutes($jamPulangNormal);
-                $keteranganPulang = 'Pulang cepat ' . $menitPulangCepat . ' menit.';
+                $menitPulangCepat = (int) round($now->diffInRealMinutes($jamPulangNormal));
+                $keteranganPulang = 'Pulang cepat ' . $this->formatMenit($menitPulangCepat) . '.';
             }
 
             /*
@@ -188,5 +188,21 @@ class AbsensiController extends Controller
     private function getPegawaiLogin(Request $request): ?Pegawai
     {
         return Pegawai::where('user_id', $request->user()->id)->first();
+    }
+
+    private function formatMenit(int $menit): string
+    {
+        if ($menit < 60) {
+            return $menit . ' menit';
+        }
+
+        $jam  = intdiv($menit, 60);
+        $sisa = $menit % 60;
+
+        if ($sisa === 0) {
+            return $jam . ' jam';
+        }
+
+        return $jam . ' jam ' . $sisa . ' menit';
     }
 }

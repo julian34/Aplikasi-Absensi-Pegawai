@@ -1,15 +1,21 @@
 <template>
   <main class="laporan-page">
-    <section class="laporan-card">
-      <div class="laporan-header">
-        <div>
-          <h1>Laporan Absensi</h1>
-          <p>Detail absensi pegawai berdasarkan bulan dan tahun</p>
-        </div>
-
-        <button class="btn-refresh" @click="loadLaporan">Refresh</button>
+    <section class="laporan-headbar">
+      <div>
+        <h1>Laporan Absensi</h1>
+        <p>Detail absensi pegawai berdasarkan bulan dan tahun</p>
       </div>
 
+      <div class="laporan-headbar-actions">
+        <button class="btn-dashboard" @click="goToDashboard">Dashboard</button>
+
+        <button class="btn-refresh" @click="loadLaporan">Refresh</button>
+
+        <button class="btn-logout" @click="handleLogout">Logout</button>
+      </div>
+    </section>
+
+    <section class="laporan-card">
       <div class="filter-box">
         <div class="filter-group">
           <label>Bulan</label>
@@ -49,17 +55,24 @@
           <thead>
             <tr>
               <th class="sticky-col pegawai-col">Pegawai</th>
-              <th v-for="hari in jumlahHari" :key="hari" class="tanggal-col">
+
+              <th v-for="hari in daysInMonth" :key="hari" class="tanggal-col">
                 {{ hari }}
               </th>
             </tr>
           </thead>
 
           <tbody>
+            <tr v-if="laporan.length === 0">
+              <td :colspan="daysInMonth + 1" class="empty-row">
+                Data laporan absensi belum tersedia.
+              </td>
+            </tr>
+
             <tr v-for="pegawai in laporan" :key="pegawai.pegawai_id">
               <td class="sticky-col pegawai-col">
                 <div class="pegawai-name">{{ pegawai.nama }}</div>
-                <div class="pegawai-meta">{{ pegawai.nip }}</div>
+                <div class="pegawai-meta">NIP: {{ pegawai.nip || "-" }}</div>
                 <div class="pegawai-meta">{{ pegawai.jabatan || "-" }}</div>
               </td>
 
@@ -81,10 +94,6 @@
           </tbody>
         </table>
       </div>
-
-      <div v-if="!loading && laporan.length === 0" class="empty-box">
-        Data laporan absensi belum tersedia.
-      </div>
     </section>
 
     <div v-if="selectedDetail" class="modal-overlay" @click.self="closeDetail">
@@ -93,7 +102,8 @@
           <div>
             <h2>Detail Absensi</h2>
             <p>
-              {{ selectedDetail.pegawai.nama }} -
+              {{ selectedDetail.pegawai.nama }}
+              -
               {{ formatTanggal(selectedDetail.absensi.tanggal) }}
             </p>
           </div>
@@ -104,12 +114,22 @@
         <div class="detail-grid">
           <div>
             <label>NIP</label>
-            <strong>{{ selectedDetail.pegawai.nip }}</strong>
+            <strong>{{ selectedDetail.pegawai.nip || "-" }}</strong>
           </div>
 
           <div>
             <label>Jabatan</label>
             <strong>{{ selectedDetail.pegawai.jabatan || "-" }}</strong>
+          </div>
+
+          <div>
+            <label>Unit Kerja</label>
+            <strong>{{ selectedDetail.pegawai.unit_kerja || "-" }}</strong>
+          </div>
+
+          <div>
+            <label>Tanggal</label>
+            <strong>{{ selectedDetail.absensi.tanggal }}</strong>
           </div>
 
           <div>
@@ -143,7 +163,7 @@
 
           <div>
             <label>Keterangan</label>
-            <strong>{{ selectedDetail.absensi.keterangan || "-" }}</strong>
+            <strong>{{ formatKeterangan(selectedDetail.absensi.keterangan) }}</strong>
           </div>
         </div>
       </section>
@@ -153,15 +173,19 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import { useAuth } from "@/composables/useAuth";
 import { laporanAbsensiService } from "@/services/laporanAbsensiService";
 import "@/assets/laporanAbsensi.css";
+
+const router = useRouter();
+const { logout } = useAuth();
 
 const now = new Date();
 
 const selectedBulan = ref(now.getMonth() + 1);
 const selectedTahun = ref(now.getFullYear());
 
-const jumlahHari = ref(0);
 const laporan = ref([]);
 const loading = ref(false);
 const selectedDetail = ref(null);
@@ -186,6 +210,10 @@ const tahunList = computed(() => {
   return [currentYear - 1, currentYear, currentYear + 1];
 });
 
+const daysInMonth = computed(() => {
+  return new Date(selectedTahun.value, selectedBulan.value, 0).getDate();
+});
+
 const loadLaporan = async () => {
   loading.value = true;
 
@@ -195,15 +223,22 @@ const loadLaporan = async () => {
       selectedTahun.value,
     );
 
-    jumlahHari.value = result.data.jumlah_hari;
-    laporan.value = result.data.pegawai;
+    laporan.value = result.data?.pegawai || [];
   } catch (error) {
-    console.error(error);
+    console.error("Gagal memuat laporan absensi:", error);
     laporan.value = [];
-    jumlahHari.value = 0;
   } finally {
     loading.value = false;
   }
+};
+
+const goToDashboard = () => {
+  router.push("/dashboard");
+};
+
+const handleLogout = async () => {
+  await logout();
+  router.push("/login");
 };
 
 const openDetail = (pegawai, absensi) => {
@@ -249,7 +284,21 @@ const formatStatus = (value) => {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
+const formatKeterangan = (keterangan) => {
+  if (!keterangan) return "-";
+
+  return keterangan.replace(/(\d+(?:\.\d+)?)\s*menit/g, (_, p1) => {
+    const totalMenit = Math.round(parseFloat(p1));
+    if (totalMenit < 60) return totalMenit + " menit";
+    const jam = Math.floor(totalMenit / 60);
+    const sisa = totalMenit % 60;
+    return sisa === 0 ? jam + " jam" : jam + " jam " + sisa + " menit";
+  });
+};
+
 const formatTanggal = (tanggal) => {
+  if (!tanggal) return "-";
+
   return new Date(tanggal).toLocaleDateString("id-ID", {
     weekday: "long",
     day: "2-digit",
