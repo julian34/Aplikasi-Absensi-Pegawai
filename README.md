@@ -146,6 +146,15 @@ Berdasarkan use case diagram, aktor utama dalam sistem adalah:
 
 ---
 
+## Feature Test Login Pegawai
+
+| Kode Test | Skenario Pengujian                                 | Expected Result                                          | Hasil |
+| --------- | -------------------------------------------------- | -------------------------------------------------------- | ----- |
+| FT-LG-01  | Pegawai login menggunakan email dan password valid | Sistem menerima login dan menghasilkan token autentikasi | Lulus |
+| FT-LG-02  | Pegawai login menggunakan NIP dan password valid   | Sistem menerima login dan menghasilkan token autentikasi | Lulus |
+| FT-LG-03  | Login gagal jika password salah                    | Sistem menolak login dan menampilkan pesan kesalahan     | Lulus |
+| FT-LG-04  | Login gagal jika input kosong                      | Sistem menolak login dan menampilkan pesan validasi      | Lulus |
+
 ## Instalasi Menggunakan Docker
 
 Pastikan Docker dan Docker Compose sudah terpasang.
