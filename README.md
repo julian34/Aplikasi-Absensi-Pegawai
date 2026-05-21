@@ -121,6 +121,29 @@ Berdasarkan use case diagram, aktor utama dalam sistem adalah:
 
 ![CFG](Doc/cfg.drawio.png)
 
+## Pengujian Unit Absensi
+
+| Kode Test | Skenario Pengujian                                                 | Expected Result                            | Hasil |
+| --------- | ------------------------------------------------------------------ | ------------------------------------------ | ----- |
+| UT-01     | Status masuk tepat waktu jika absen sebelum atau sama dengan 07.45 | Sistem menetapkan status `tepat_waktu`     | Lulus |
+| UT-02     | Status masuk terlambat jika absen setelah 07.45                    | Sistem menetapkan status `terlambat`       | Lulus |
+| UT-03     | Status pulang sesuai jam jika pulang jam 16.00 atau lebih          | Sistem menetapkan status `sesuai_jam`      | Lulus |
+| UT-04     | Status pulang cepat jika pulang sebelum 16.00                      | Sistem menetapkan status `pulang_cepat`    | Lulus |
+| UT-05     | Status akhir hadir jika masuk tepat waktu                          | Sistem menetapkan status akhir `hadir`     | Lulus |
+| UT-06     | Status akhir terlambat jika status masuk terlambat                 | Sistem menetapkan status akhir `terlambat` | Lulus |
+
+## Feature Test Absensi Pegawai
+
+| Kode Test | Skenario Pengujian                                    | Expected Result                                  | Hasil |
+| --------- | ----------------------------------------------------- | ------------------------------------------------ | ----- |
+| FT-AB-01  | Pegawai dapat melihat absensi hari ini                | Sistem menampilkan data absensi hari ini         | Lulus |
+| FT-AB-02  | Pegawai dapat melakukan absen datang                  | Sistem menyimpan jam masuk pegawai               | Lulus |
+| FT-AB-03  | Pegawai tidak dapat absen datang dua kali             | Sistem menolak absensi datang ganda              | Lulus |
+| FT-AB-04  | Pegawai tidak dapat absen pulang sebelum absen datang | Sistem menolak absensi pulang                    | Lulus |
+| FT-AB-05  | Pegawai dapat absen pulang setelah absen datang       | Sistem menyimpan jam pulang pegawai              | Lulus |
+| FT-AB-06  | Pegawai tidak dapat absen pulang dua kali             | Sistem menolak absensi pulang ganda              | Lulus |
+| FT-AB-07  | Endpoint absensi ditolak jika belum login             | Sistem mengembalikan status tidak terautentikasi | Lulus |
+
 ---
 
 ## Instalasi Menggunakan Docker
