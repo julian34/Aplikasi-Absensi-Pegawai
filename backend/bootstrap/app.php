@@ -12,9 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Late CORS cleanup - handles all CORS headers
+        // Final CORS cleanup - only use this one, appended last
         $middleware->api(append: [
-            \App\Http\Middleware\LateCors::class,
+            \App\Http\Middleware\FinalCorsCleanup::class,
         ]);
         
         // Exclude login endpoint from CSRF protection
