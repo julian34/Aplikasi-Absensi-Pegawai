@@ -1,0 +1,1 @@
+﻿<?php require "vendor/autoload.php"; $app = require "bootstrap/app.php"; $app->make("Illuminate\Contracts\Console\Kernel")->bootstrap(); $tables = DB::select("SHOW TABLES"); foreach($tables as $t) { $tname = array_values((array)$t)[0]; $count = DB::table($tname)->count(); echo $tname . ": " . $count . " rows\n"; }

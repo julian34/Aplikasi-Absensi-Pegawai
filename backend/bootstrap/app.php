@@ -12,16 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Final CORS cleanup - only use this one, appended last
-        $middleware->api(append: [
-            \App\Http\Middleware\FinalCorsCleanup::class,
-        ]);
-        
-        // Exclude login endpoint from CSRF protection
-        $middleware->validateCsrfTokens(except: [
-            'api/login',
-            'api/sanctum/csrf-cookie',
-        ]);
+        //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

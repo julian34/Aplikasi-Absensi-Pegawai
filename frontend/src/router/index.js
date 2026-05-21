@@ -31,6 +31,11 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
 
+  // Restore session from stored token on page reload
+  if (!authStore.isAuthenticated && localStorage.getItem("auth_token")) {
+    await authStore.fetchUser();
+  }
+
   // If route requires auth and user not authenticated, redirect to login
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next("/login");

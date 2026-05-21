@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Pegawai;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -55,10 +54,11 @@ class AuthController extends Controller
             }
         }
 
-        Auth::login($user);
+        $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
             'message' => 'Login berhasil',
+            'token' => $token,
             'user' => $user->load('pegawai'),
         ], 200);
     }
@@ -78,10 +78,7 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        Auth::logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json([
             'message' => 'Logout berhasil',

@@ -1,18 +1,18 @@
+import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/stores/authStore";
 
 export const useAuth = () => {
   const authStore = useAuthStore();
+  const { user, loading: isLoading, error, isAuthenticated } = storeToRefs(authStore);
 
   return {
-    // State
-    user: authStore.user,
-    isLoading: authStore.loading,
-    error: authStore.error,
+    // Reactive state (storeToRefs agar update store terlihat di komponen)
+    user,
+    isLoading,
+    error,
+    isAuthenticated,
 
-    // Computed
-    isAuthenticated: authStore.isAuthenticated,
-
-    // Actions
+    // Actions (tidak perlu storeToRefs untuk fungsi)
     login: authStore.login,
     logout: authStore.logout,
     fetchUser: authStore.fetchUser,

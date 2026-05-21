@@ -12,27 +12,17 @@ export const useAuthStore = defineStore("auth", () => {
   const isAuthenticated = computed(() => user.value !== null);
 
   // Actions
-  const getCsrfToken = async () => {
-    try {
-      await axios.get("/sanctum/csrf-cookie");
-    } catch (err) {
-      console.error("Error fetching CSRF token:", err);
-    }
-  };
-
   const login = async (login, password) => {
     loading.value = true;
     error.value = null;
 
     try {
-      // Get CSRF token first
-      await getCsrfToken();
-
       const response = await axios.post("/login", {
         login, // Accepts both email and NIP
         password,
       });
 
+      localStorage.setItem("auth_token", response.data.token);
       user.value = response.data.user;
       return {
         success: true,
@@ -56,24 +46,19 @@ export const useAuthStore = defineStore("auth", () => {
 
   const logout = async () => {
     loading.value = true;
-    error.value = null;
 
     try {
       await axios.post("/logout");
-      user.value = null;
-      return {
-        success: true,
-        message: "Logout berhasil",
-      };
-    } catch (err) {
-      error.value = "Logout gagal";
-      return {
-        success: false,
-        message: "Logout gagal",
-      };
+    } catch {
+      // API call may fail (e.g. token already expired), but we always clear local state
     } finally {
+      localStorage.removeItem("auth_token");
+      user.value = null;
+      error.value = null;
       loading.value = false;
     }
+
+    return { success: true, message: "Logout berhasil" };
   };
 
   const fetchUser = async () => {
@@ -86,6 +71,10 @@ export const useAuthStore = defineStore("auth", () => {
       };
     } catch (err) {
       user.value = null;
+      // Token tidak valid / expired — hapus agar router guard tidak retry terus
+      if (err.response?.status === 401) {
+        localStorage.removeItem("auth_token");
+      }
       return {
         success: false,
         message: "Gagal mengambil data user",
@@ -108,7 +97,6 @@ export const useAuthStore = defineStore("auth", () => {
     isAuthenticated,
 
     // Actions
-    getCsrfToken,
     login,
     logout,
     fetchUser,
