@@ -3,10 +3,8 @@
 # ============================================================================
 /vendor/
 /node_modules/
-composer.lock
-package-lock.json
-yarn-lock.json
-pnpm-lock.yaml
+backend/.env.testing
+cookies.txt
 
 # ============================================================================
 # Environment Variables (Sensitive Data)
@@ -127,4 +125,5 @@ Homestead.yaml
 /.idea
 /.vscode
 .env.dusk.local
-.env.dusk.testing
+.env.dusk.testing 
+README-dev.md
