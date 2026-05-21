@@ -45,8 +45,8 @@ services:
       - "8082:80"
     environment:
       PMA_HOST: db
-      PMA_USER: finpoint_user
-      PMA_PASSWORD: finpoint_pass
+      PMA_USER: root
+      PMA_PASSWORD: root_password
     depends_on:
       db:
         condition: service_healthy
