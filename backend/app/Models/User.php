@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -16,7 +15,7 @@ use Laravel\Sanctum\HasApiTokens;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
+   
     use HasFactory, Notifiable, HasApiTokens;
 
     /**
@@ -32,9 +31,7 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Get the pegawai associated with the user
-     */
+    // relasi ke pegawai satu-ke-satu
     public function pegawai(): HasOne
     {
         return $this->hasOne(Pegawai::class);
