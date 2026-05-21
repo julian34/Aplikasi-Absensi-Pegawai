@@ -5,6 +5,7 @@
 /node_modules/
 backend/.env.testing
 cookies.txt
+README copy.md
 
 # ============================================================================
 # Environment Variables (Sensitive Data)

@@ -163,7 +163,9 @@
 
           <div>
             <label>Keterangan</label>
-            <strong>{{ formatKeterangan(selectedDetail.absensi.keterangan) }}</strong>
+            <strong>{{
+              formatKeterangan(selectedDetail.absensi.keterangan)
+            }}</strong>
           </div>
         </div>
       </section>

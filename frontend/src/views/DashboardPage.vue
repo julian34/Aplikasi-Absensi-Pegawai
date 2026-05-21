@@ -118,9 +118,7 @@
 
           <div class="attendance-note">
             <strong>Keterangan:</strong>
-            <span>{{
-              formatKeterangan(absensi?.keterangan)
-            }}</span>
+            <span>{{ formatKeterangan(absensi?.keterangan) }}</span>
           </div>
         </div>
       </div>
