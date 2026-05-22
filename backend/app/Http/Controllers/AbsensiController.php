@@ -87,7 +87,7 @@ class AbsensiController extends Controller
                     'message' => 'Anda sudah melakukan absen datang hari ini.',
                 ], 422);
             }
-            
+
             // Tentukan status masuk berdasarkan waktu absen
             $jamMasukNormal = Carbon::parse($today . ' 07:30:00', 'Asia/Jakarta');
             $batasToleransi = Carbon::parse($today . ' 07:45:00', 'Asia/Jakarta');

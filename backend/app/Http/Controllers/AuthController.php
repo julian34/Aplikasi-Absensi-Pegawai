@@ -13,8 +13,8 @@ class AuthController extends Controller
     /**
      * Login with email or NIP (11-18 digits)
      */
-    
-    // fungsi login untuk pengguna 
+
+    // fungsi login untuk pengguna
     public function login(Request $request)
     {
         // Ambil input login (bisa berupa email atau NIP) dan password dari request
@@ -60,7 +60,6 @@ class AuthController extends Controller
                     'password' => 'Password salah.',
                 ]);
             }
-
         } else {
             // Login via email
             $user = User::where('email', $loginInput)->first();

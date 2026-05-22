@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<ruleset name="Laravel Cyclomatic Complexity">
+
+    <description>
+        PHP_CodeSniffer ruleset untuk mengecek standar PSR-12 dan Cyclomatic Complexity pada proyek Laravel.
+    </description>
+
+    <arg name="colors"/>
+    <arg name="extensions" value="php"/>
+    <arg name="report" value="full"/>
+
+    <file>app</file>
+    <file>routes</file>
+    <file>database</file>
+
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/storage/*</exclude-pattern>
+    <exclude-pattern>*/bootstrap/cache/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+
+    <rule ref="PSR12"/>
+
+    <rule ref="Generic.Metrics.CyclomaticComplexity">
+        <properties>
+            <property name="complexity" value="10"/>
+            <property name="absoluteComplexity" value="20"/>
+        </properties>
+    </rule>
+
+</ruleset>

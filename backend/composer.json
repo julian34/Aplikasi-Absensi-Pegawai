@@ -26,11 +26,12 @@
     "type": "project",
     "require-dev": {
         "fakerphp/faker": "^1.23",
+        "laravel/pail": "^1.2.5",
         "laravel/pint": "^1.27",
-        "nunomaduro/collision": "^8.6",
         "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.6",
         "phpunit/phpunit": "^12.5.12",
-        "laravel/pail": "^1.2.5"
+        "squizlabs/php_codesniffer": "^4.0"
     },
     "description": "The skeleton application for the Laravel framework.",
     "require": {
