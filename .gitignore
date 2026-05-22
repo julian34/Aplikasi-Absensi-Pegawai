@@ -6,6 +6,7 @@
 backend/.env.testing
 cookies.txt
 README copy.md
+list-com.md
 
 # ============================================================================
 # Environment Variables (Sensitive Data)

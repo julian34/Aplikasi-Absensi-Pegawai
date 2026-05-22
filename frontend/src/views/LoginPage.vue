@@ -95,12 +95,12 @@ const validateField = (field) => {
   if (field === "login") {
     const loginValue = formData.value.login.trim();
     const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginValue);
-    const isNip = /^\d{11}$/.test(loginValue);
+    const isNip = /^\d{11,18}$/.test(loginValue);
 
     if (!loginValue) {
       errors.value.login = "Email atau NIP harus diisi";
     } else if (!isEmail && !isNip) {
-      errors.value.login = "Format email atau NIP (11 digit) tidak valid";
+      errors.value.login = "Format email atau NIP tidak valid";
     } else {
       errors.value.login = "";
     }

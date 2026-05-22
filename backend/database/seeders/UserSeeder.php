@@ -15,7 +15,7 @@ class UserSeeder extends Seeder
     {
         // Create test user
         $user = User::create([
-            'name' => 'Andi Multimedia',
+            'name' => 'Andi Kasongat',
             'email' => 'Andimultimedia@papua.go.id',
             'password' => bcrypt('papua1324'),
         ]);
@@ -23,10 +23,10 @@ class UserSeeder extends Seeder
         // Create associated pegawai record
         Pegawai::create([
             'user_id' => $user->id,
-            'nip' => '19900101001',
-            'nama' => 'Andi Multimedia',
-            'jabatan' => 'Staff IT',
-            'unit_kerja' => 'Dinas Kepegawaian',
+            'nip' => '199407132022111001',
+            'nama' => 'Andi Kasongat',
+            'jabatan' => 'Staff',
+            'unit_kerja' => 'Dinas Komunikasi dan Informatika',
         ]);
     }
 }

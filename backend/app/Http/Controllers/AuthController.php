@@ -23,8 +23,8 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        // Determine if input is NIP (11 digits) or email
-        $isNip = preg_match('/^\d{11}$/', $loginInput);
+        // Determine if input is NIP (18 digits) or email
+        $isNip = preg_match('/^\d{11,18}$/', $loginInput);
 
         if ($isNip) {
             // Login via NIP
@@ -38,7 +38,19 @@ class AuthController extends Controller
 
             $user = $pegawai->user;
 
-            if (!$user || !Hash::check($password, $user->password)) {
+            // if (!$user || !Hash::check($password, $user->password)) {
+            //     throw ValidationException::withMessages([
+            //         'password' => 'Password salah.',
+            //     ]);
+            // }
+
+            if (!$user) {
+                throw ValidationException::withMessages([
+                    'login' => 'Email tidak ditemukan.',
+                ]);
+            }
+
+            if (!Hash::check($password, $user->password)) {
                 throw ValidationException::withMessages([
                     'password' => 'Password salah.',
                 ]);
@@ -48,9 +60,15 @@ class AuthController extends Controller
             // Login via email
             $user = User::where('email', $loginInput)->first();
 
-            if (!$user || !Hash::check($password, $user->password)) {
+            if (!$user) {
                 throw ValidationException::withMessages([
-                    'login' => 'Email atau password salah.',
+                    'login' => 'Email tidak ditemukan.',
+                ]);
+            }
+
+            if (!Hash::check($password, $user->password)) {
+                throw ValidationException::withMessages([
+                    'password' => 'Password salah.',
                 ]);
             }
         }
