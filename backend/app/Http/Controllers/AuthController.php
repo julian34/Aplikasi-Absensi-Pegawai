@@ -11,13 +11,17 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     /**
-     * Login with email or NIP (11 digits)
+     * Login with email or NIP (11-18 digits)
      */
+    
+    // fungsi login untuk pengguna 
     public function login(Request $request)
     {
+        // Ambil input login (bisa berupa email atau NIP) dan password dari request
         $loginInput = $request->input('login');
         $password = $request->input('password');
 
+        // Validasi input login dan password
         $request->validate([
             'login' => 'required|string',
             'password' => 'required|string',
@@ -26,6 +30,7 @@ class AuthController extends Controller
         // Determine if input is NIP (18 digits) or email
         $isNip = preg_match('/^\d{11,18}$/', $loginInput);
 
+        // Jika input adalah NIP, cari user berdasarkan NIP. Jika tidak, cari berdasarkan email.
         if ($isNip) {
             // Login via NIP
             $pegawai = Pegawai::where('nip', $loginInput)->first();
@@ -76,6 +81,7 @@ class AuthController extends Controller
         // Buat token akses untuk user yang berhasil logins
         $token = $user->createToken('auth-token')->plainTextToken;
 
+        // Kembalikan response JSON dengan token dan data user (termasuk relasi pegawai)
         return response()->json([
             'message' => 'Login berhasil',
             'token' => $token,
