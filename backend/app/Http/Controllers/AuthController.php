@@ -43,6 +43,7 @@ class AuthController extends Controller
                     'password' => 'Password salah.',
                 ]);
             }
+
         } else {
             // Login via email
             $user = User::where('email', $loginInput)->first();
@@ -54,6 +55,7 @@ class AuthController extends Controller
             }
         }
 
+        // Buat token akses untuk user yang berhasil logins
         $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([

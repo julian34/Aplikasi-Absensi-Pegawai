@@ -2,18 +2,25 @@
 
 namespace App\Http\Controllers;
 
+// Pastikan untuk mengimpor model dan kelas yang diperlukan
+use Carbon\Carbon; // ​DateTime Handling dalam Laravel
+use Illuminate\Http\Request; // Untuk menangani request dari client
+use Illuminate\Support\Facades\DB; // Untuk transaksi database
+
+// impor model Absensi dan Pegawai
 use App\Models\Absensi;
 use App\Models\Pegawai;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class AbsensiController extends Controller
 {
+    // fungsi untuk mendapatkan data absensi hari ini untuk pegawai yang login
     public function today(Request $request)
     {
+
+        // ambil data pegawai berdasarkan user yang login
         $pegawai = $this->getPegawaiLogin($request);
 
+        // jika data pegawai tidak ditemukan, kembalikan response error
         if (!$pegawai) {
             return response()->json([
                 'success' => false,
@@ -21,12 +28,15 @@ class AbsensiController extends Controller
             ], 404);
         }
 
+        // ambil data absensi hari ini untuk pegawai yang login
         $today = Carbon::now('Asia/Jakarta')->toDateString();
 
+        // Cari absensi hari ini untuk pegawai yang login
         $absensi = Absensi::where('pegawai_id', $pegawai->id)
             ->where('tanggal', $today)
             ->first();
 
+        // jika data absensi tidak ditemukan, kembalikan response error
         return response()->json([
             'success' => true,
             'message' => 'Data absensi hari ini berhasil diambil.',
@@ -34,6 +44,7 @@ class AbsensiController extends Controller
         ]);
     }
 
+    // fungsi untuk melakukan absen datang
     public function absenDatang(Request $request)
     {
         $now = Carbon::now('Asia/Jakarta');
@@ -103,6 +114,7 @@ class AbsensiController extends Controller
         });
     }
 
+    // fungsi untuk melakukan absen pulang
     public function absenPulang(Request $request)
     {
         $now = Carbon::now('Asia/Jakarta');
@@ -185,11 +197,13 @@ class AbsensiController extends Controller
         });
     }
 
+    // fungsi pembantu untuk mendapatkan data pegawai berdasarkan user yang login
     private function getPegawaiLogin(Request $request): ?Pegawai
     {
         return Pegawai::where('user_id', $request->user()->id)->first();
     }
 
+    // fungsi pembantu untuk format menit ke jam dan menits
     private function formatMenit(int $menit): string
     {
         if ($menit < 60) {
