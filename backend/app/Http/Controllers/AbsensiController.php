@@ -29,7 +29,9 @@ class AbsensiController extends Controller
         }
 
         // ambil data absensi hari ini untuk pegawai yang login
-        $today = Carbon::now('Asia/Jakarta')->toDateString();
+        // $serverTime = Carbon::now('Asia/Jakarta')->addDays(2)->setTime(8, 0, 0);
+        $serverTime = Carbon::now('Asia/Jakarta');
+        $today = $serverTime->toDateString();
 
         // Cari absensi hari ini untuk pegawai yang login
         $absensi = Absensi::where('pegawai_id', $pegawai->id)
@@ -41,6 +43,8 @@ class AbsensiController extends Controller
             'success' => true,
             'message' => 'Data absensi hari ini berhasil diambil.',
             'data' => $absensi,
+            'server_time' => $serverTime->toIso8601String(),
+            'is_weekend' => $serverTime->isWeekend(),
         ]);
     }
 
@@ -48,6 +52,7 @@ class AbsensiController extends Controller
     public function absenDatang(Request $request)
     {
         $now = Carbon::now('Asia/Jakarta');
+        // $now = Carbon::now('Asia/Jakarta')->addDays(2);
         $today = $now->toDateString();
 
         // absen datang hanya bisa dilakukan pada hari Senin sampai Jumat

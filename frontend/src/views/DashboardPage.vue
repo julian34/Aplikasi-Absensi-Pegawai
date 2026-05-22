@@ -94,6 +94,10 @@
             </div>
           </div>
 
+          <div v-if="isWeekend" class="weekend-notice">
+            Hari ini adalah hari libur (Sabtu/Minggu). Absensi tidak tersedia.
+          </div>
+
           <div class="attendance-actions">
             <button
               class="btn-attendance btn-check-in"
@@ -131,7 +135,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
 import { absensiService } from "@/services/absensiService";
@@ -147,13 +151,29 @@ const actionLoading = ref(false);
 const message = ref("");
 const messageType = ref("success");
 
+// Jam server dari Laravel
+const serverTimeOffset = ref(0);
+const currentTime = ref(new Date());
+let clockInterval = null;
+
 const todayText = computed(() => {
-  return new Date().toLocaleDateString("id-ID", {
+  const date = currentTime.value.toLocaleDateString("id-ID", {
     weekday: "long",
     day: "2-digit",
     month: "long",
     year: "numeric",
   });
+  const time = currentTime.value.toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+  return `${date} | ${time}`;
+});
+
+const isWeekend = computed(() => {
+  const day = currentTime.value.getDay(); // 0 = Minggu, 6 = Sabtu
+  return day === 0 || day === 6;
 });
 
 const goToLaporanAbsensi = () => {
@@ -161,10 +181,12 @@ const goToLaporanAbsensi = () => {
 };
 
 const canAbsenDatang = computed(() => {
+  if (isWeekend.value) return false;
   return !absensi.value || !absensi.value.jam_masuk;
 });
 
 const canAbsenPulang = computed(() => {
+  if (isWeekend.value) return false;
   return absensi.value?.jam_masuk && !absensi.value?.jam_pulang;
 });
 
@@ -217,8 +239,18 @@ const loadTodayAbsensi = async () => {
   message.value = "";
 
   try {
+    const clientBefore = Date.now();
     const result = await absensiService.getToday();
+    const clientAfter = Date.now();
+
     absensi.value = result.data;
+
+    if (result.server_time) {
+      const serverTimestamp = new Date(result.server_time).getTime();
+      const clientMid = (clientBefore + clientAfter) / 2;
+      serverTimeOffset.value = serverTimestamp - clientMid;
+      currentTime.value = new Date(Date.now() + serverTimeOffset.value);
+    }
   } catch (error) {
     showError(error);
   } finally {
@@ -303,5 +335,13 @@ onMounted(async () => {
   }
 
   await loadTodayAbsensi();
+
+  clockInterval = setInterval(() => {
+    currentTime.value = new Date(Date.now() + serverTimeOffset.value);
+  }, 1000);
+});
+
+onUnmounted(() => {
+  if (clockInterval) clearInterval(clockInterval);
 });
 </script>
