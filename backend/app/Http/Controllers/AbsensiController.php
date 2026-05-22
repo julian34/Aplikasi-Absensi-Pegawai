@@ -50,6 +50,7 @@ class AbsensiController extends Controller
         $now = Carbon::now('Asia/Jakarta');
         $today = $now->toDateString();
 
+        // absen datang hanya bisa dilakukan pada hari Senin sampai Jumat
         if (!$now->isWeekday()) {
             return response()->json([
                 'success' => false,
@@ -59,6 +60,7 @@ class AbsensiController extends Controller
 
         $pegawai = $this->getPegawaiLogin($request);
 
+        // jika data pegawai tidak ditemukan, kembalikan response error
         if (!$pegawai) {
             return response()->json([
                 'success' => false,
@@ -66,31 +68,37 @@ class AbsensiController extends Controller
             ], 404);
         }
 
+        // gunakan transaksi untuk memastikan data absensi tidak duplikat jika ada request bersamaan
         return DB::transaction(function () use ($pegawai, $now, $today) {
             $absensi = Absensi::where('pegawai_id', $pegawai->id)
                 ->where('tanggal', $today)
                 ->lockForUpdate()
                 ->first();
 
+            // jika sudah ada data absensi untuk hari ini dan sudah absen datang, kembalikan response error
             if ($absensi && $absensi->jam_masuk) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Anda sudah melakukan absen datang hari ini.',
                 ], 422);
             }
-
+            
+            // Tentukan status masuk berdasarkan waktu absen
             $jamMasukNormal = Carbon::parse($today . ' 07:30:00', 'Asia/Jakarta');
             $batasToleransi = Carbon::parse($today . ' 07:45:00', 'Asia/Jakarta');
 
+            // Default status masuk adalah tepat waktu
             $statusMasuk = 'tepat_waktu';
             $keterangan = 'Absen datang tepat waktu.';
 
+            // Jika absen datang setelah batas toleransi, maka status masuk menjadi terlambat
             if ($now->greaterThan($batasToleransi)) {
                 $statusMasuk = 'terlambat';
                 $menitTerlambat = (int) round($jamMasukNormal->diffInRealMinutes($now));
                 $keterangan = 'Terlambat ' . $this->formatMenit($menitTerlambat) . '.';
             }
 
+            // jika belum ada data absensi untuk hari ini, buat data baru. Jika sudah ada tapi belum absen datang, update data tersebut
             $absensi = Absensi::create([
                 'pegawai_id' => $pegawai->id,
                 'tanggal' => $today,
@@ -98,14 +106,11 @@ class AbsensiController extends Controller
                 'jam_pulang' => null,
                 'status_masuk' => $statusMasuk,
                 'status_pulang' => null,
-
-                // Sesuai enum migration Anda
-                // Setelah absen datang, status dibuat absen_sekali
                 'status' => 'absen_sekali',
-
                 'keterangan' => $keterangan,
             ]);
 
+            // kembalikan response sukses dengan data absensi yang baru dibuat
             return response()->json([
                 'success' => true,
                 'message' => 'Absen datang berhasil.',
@@ -120,6 +125,7 @@ class AbsensiController extends Controller
         $now = Carbon::now('Asia/Jakarta');
         $today = $now->toDateString();
 
+        // absen pulang hanya bisa dilakukan pada hari Senin sampai Jumat
         if (!$now->isWeekday()) {
             return response()->json([
                 'success' => false,
@@ -127,8 +133,10 @@ class AbsensiController extends Controller
             ], 422);
         }
 
+        // ambil data pegawai berdasarkan user yang login
         $pegawai = $this->getPegawaiLogin($request);
 
+        // jika data pegawai tidak ditemukan, kembalikan response error
         if (!$pegawai) {
             return response()->json([
                 'success' => false,
@@ -136,12 +144,15 @@ class AbsensiController extends Controller
             ], 404);
         }
 
+        // gunakan transaksi untuk memastikan data absensi tidak duplikat jika ada request bersamaan
         return DB::transaction(function () use ($pegawai, $now, $today) {
+            // Cari data absensi hari ini untuk pegawai yang login dengan lock for update untuk
             $absensi = Absensi::where('pegawai_id', $pegawai->id)
                 ->where('tanggal', $today)
                 ->lockForUpdate()
                 ->first();
 
+            // jika belum ada data absensi atau belum absen datang, kembalikan response error
             if (!$absensi || !$absensi->jam_masuk) {
                 return response()->json([
                     'success' => false,
@@ -149,6 +160,7 @@ class AbsensiController extends Controller
                 ], 422);
             }
 
+            // jika sudah absen pulang, kembalikan response error
             if ($absensi->jam_pulang) {
                 return response()->json([
                     'success' => false,
@@ -156,32 +168,32 @@ class AbsensiController extends Controller
                 ], 422);
             }
 
+            // Tentukan status pulang berdasarkan waktu absen
             $jamPulangNormal = Carbon::parse($today . ' 16:00:00', 'Asia/Jakarta');
 
+            // Default status pulang adalah sesuai jam
             $statusPulang = 'sesuai_jam';
             $keteranganPulang = 'Absen pulang sesuai jam kerja.';
 
+            // Jika absen pulang sebelum jam pulang normal, maka status pulang menjadi pulang cepat
             if ($now->lessThan($jamPulangNormal)) {
                 $statusPulang = 'pulang_cepat';
                 $menitPulangCepat = (int) round($now->diffInRealMinutes($jamPulangNormal));
                 $keteranganPulang = 'Pulang cepat ' . $this->formatMenit($menitPulangCepat) . '.';
             }
 
-            /*
-             * Karena enum status Anda hanya:
-             * absen_sekali, hadir, terlambat, tidak hadir
-             *
-             * Maka pulang cepat tidak dimasukkan ke kolom status.
-             * Pulang cepat cukup disimpan di status_pulang.
-             */
+            // Tentukan status akhir berdasarkan status masuk dan status pulang
             $statusAkhir = 'hadir';
 
+            // Jika status pulang adalah pulang cepat, maka status akhir menjadi pulang cepat
             if ($absensi->status_masuk === 'terlambat') {
                 $statusAkhir = 'terlambat';
             }
 
+            // Jika status pulang adalah pulang cepat, maka status akhir menjadi pulang cepat
             $keteranganLama = $absensi->keterangan ? $absensi->keterangan . ' ' : '';
 
+            // Update data absensi dengan jam pulang, status pulang, status akhir, dan keterangan
             $absensi->update([
                 'jam_pulang' => $now->format('H:i:s'),
                 'status_pulang' => $statusPulang,
@@ -200,23 +212,28 @@ class AbsensiController extends Controller
     // fungsi pembantu untuk mendapatkan data pegawai berdasarkan user yang login
     private function getPegawaiLogin(Request $request): ?Pegawai
     {
+        // ambil data pegawai berdasarkan user yang login
         return Pegawai::where('user_id', $request->user()->id)->first();
     }
 
     // fungsi pembantu untuk format menit ke jam dan menits
     private function formatMenit(int $menit): string
     {
+        // Jika menit kurang dari 60, cukup tampilkan menit
         if ($menit < 60) {
             return $menit . ' menit';
         }
 
+        // Jika menit 60 atau lebih, konversi ke jam dan sisa menit
         $jam  = intdiv($menit, 60);
         $sisa = $menit % 60;
 
+        // Format output
         if ($sisa === 0) {
             return $jam . ' jam';
         }
 
+        // Jika ada sisa menit, tampilkan dalam format "X jam Y menit"
         return $jam . ' jam ' . $sisa . ' menit';
     }
 }
